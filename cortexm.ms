@@ -88,7 +88,7 @@ While it is possible to perform task switching while running in this mode, the
 task switching mechanism also needs to be able to run in the normal Thread mode.
 As a result, a different mechanism is used to ensure that Thread mode is always
 used when performing task switching.
-
+.
 .SH
 Floating point support
 .LP
@@ -155,78 +155,139 @@ option with the
 loader. This has the effect of placing string constants in the text section
 of the binary, again reducing the amount of data copied into RAM.
 
-For a system including non-frozen Limbo modules, the following table shows
-the effect of using
+The following table shows the effect of using
 .CW "data2texts"
 instead of
 .CW "data2s"
 to encode data, and the larger effect of including string constants in the
-text section of the binary for a microcontroller with 384K of RAM.
+text section of the binary for a microcontroller with 384 kilobytes of RAM.
+The upper part of the table shows the effect on a system with non-frozen
+Limbo modules; the lower part shows the effect with frozen Limbo modules.
 
 .TS
 center tab(:);
-  c      cf(I) s cf(I) s
-  c     | c   s | c   s |
-  c     | cf(B) | cf(B) | cf(B) | cf(B) |
-| cf(B) | c     | c     | c     | c     |.
+c   s      cf(I) s cf(I) s
+c   s     | c   s | c   s |
+c   s     | cf(B) | cf(B) | cf(B) | cf(B) |
+c   c     | c   s | c   s |
+c | cf(B) | c     | c     | c     | c     |
+c | c     | c   s | c   s |
+c | cf(B) | c     | c     | c     | c     |
+c | c     | c     | c     | c     | c     |
+c | c     | c   s | c   s |
+c | cf(B) | c     | c     | c     | c     |
+c | c     | c   s | c   s |
+c
+c | c     | c   s | c   s |
+c | cf(B) | c     | c     | c     | c     |
+c | c     | c   s | c   s |
+c | cf(B) | c     | c     | c     | c     |
+c | c     | c     | c     | c     | c     |
+c | c     | c   s | c   s |
+c | cf(B) | c     | c     | c     | c     |
+c | c     | c   s | c   s |.
 :Data strings:Text strings
 :_:_
 :data2s:data2texts:data2s:data2texts
-_
-kernel:477272:477272:477272:477272
-_
-maxsize:165120:324608:339712:339968
-_
-hw:132832:132832:132832:132832
-_
+:_:_:_
+:kernel:477272:477272:477272:477272
+:_:_:_
+Non-frozen:maxsize:165120:324608:339712:339968
+Limbo modules:\^:\^:\^:\^:\^
+:_:_:_
+:hw:132832:132832:132832:132832
+:_:_:_
+
+:_:_:_
+:kernel:614584:614608:614584:614608
+:_:_:_
+Frozen:maxsize:309504:324608:339712:339968
+Limbo modules:\^:\^:\^:\^:\^
+:_:_:_
+:hw:94048:94048:94048:94048
+:_:_:_
 .TE
 
 The
 .B "kernel"
-row shows the size of the system binary in bytes, which is not affected by the
-changes. The
+rows show the size of the system binary in bytes, containing the kernel and
+root file system. With non-frozen modules, this value is not affected by the
+changes, and there is only a small effect on the system with frozen modules.
+What is noticeable is the increase in size of the binary when modules are
+frozen.
+
+The
 .B "maxsize"
-and
-.B "hw"
-rows show the corresponding values in bytes from
-.CW "/dev/memory",
-indicating the amount of RAM available to the system and the allocation high
-water mark after running the .CW "ls"
-utility. As mentioned, using the
+rows show the number of bytes of RAM available to the system. Using the
 .CW "data2texts"
 utility provides a memory saving that is largely overshadowed by the effect
 of compiling string constants into the kernel text. Since there is an overlap
 in these approaches, the combination of them yields only a marginal additional
-memory saving.
+memory saving. Freezing Limbo modules also provides a similar benefit, but
+only when these other approaches are not used.
 
-A system containing frozen Limbo modules shows much the same effect.
-
-.TS
-center tab(:);
-  c      cf(I) s cf(I) s
-  c     | c   s | c   s |
-  c     | cf(B) | cf(B) | cf(B) | cf(B) |
-| cf(B) | c     | c     | c     | c     |.
-:Data strings:Text strings
-:_:_
-:data2s:data2texts:data2s:data2texts
-_
-kernel:614584:614608:614584:614608
-_
-maxsize:309504:324608:339712:339968
-_
-hw:94048:94048:94048:94048
-_
-.TE
-
+Where freezing modules provides a distinct benefit is in the run-time use of
+RAM by modules. The
+.B "hw"
+rows show the corresponding values in bytes from the
+.CW "/dev/memory"
+output, indicating the allocation high water mark after running the
+.CW "ls"
+utility. Note that this is only affected by the use of frozen modules, with
+the other approaches having no effect on the run-time RAM usage. This is
+where we see clear RAM savings by eliminating the need to allocate memory
+for parts of the module loading process at run-time.
 .
 .SH
 New platforms
 .LP
+The initial choice of the STM32F405 microcontroller as a target for Inferno
+was determined by its low RAM provision, but was also a pragmatic decision
+based on the perceived effort needed to port Inferno to the ATSAMD51J20
+microcontroller. Returning to this microcontroller later, the port was not as
+difficult as expected.
 
-SAMD51, Apollo3, 
-Combined tree.
+Similar microcontrollers with more RAM were obtained to determine how much
+of Inferno's functionality could be used on these small devices. The first
+of these was the SparkFun MicroMod Artemis processor, which uses an Ambiq
+Apollo3 core. In an attempt to expand coverage to related processors, a
+development board with an i.MX RT1062 processor was also obtained due to
+its improved features and its use of a Cortex-M7 core.
 
+.TS
+center tab(:);
+| cf(B)     | cf(B) | cf(B) | cf(B) |
+| c         | c     | c     | c     |.
+_
+Processor:RAM:Flash memory:Core
+_
+STM32F405RGT6:192KB:1MB:Cortex-M4
+_
+ATSAMD51J20:256KB:1MB:Cortex-M4F
+_
+Apollo3:384KB:1MB:Cortex-M4F
+_
+i.MX RT1062:1MB:16MB:Cortex-M7
+_
+.TE
+
+Generally, the limiting factors to a viable Inferno port appear to be the
+amount of flash memory and RAM provided by a target. Informal tests have
+indicated that about 256KB is the minimum amount of flash memory that a
+system image needs for Thumb-2 code, and probably at least 512KB would be
+a comfortable minimum. Although some activities are possible with less
+than 256KB of RAM, there is more room for experimentation with 384KB or
+greater.
+
+Since the ports after the first were created by using the initial code as
+a base, the result was four ports with a fair amount of duplicated code.
+To make this easier to work with, the shared code was consolidated in a
+single
+.CW "cortexm"
+directory in much the same way that the
+.CW "sa1110"
+directory contains code for a number of other related ports.
+.
 .SH
 Conclusion and future work
 .LP
@@ -266,5 +327,3 @@ Inferno's memory footprint'',
 Waterloo, Canada, 2023
 .br
 .I https://9e.iwp9.org/
-.
-.IP 6.
