@@ -132,7 +132,7 @@ Memory savings
 As described in the previous work [5], some effort was needed to reduce the
 amount of RAM used by Limbo modules on a running system. This was achieved
 by expanding the code sections of Dis files during compilation of an Inferno
-system and running them from flash memory.
+system and running them directly from flash memory.
 .
 \." ### Mention merged pools and tweaked chunk size in the allocator.
 
@@ -165,7 +165,7 @@ to encode data, and the larger effect of including string constants in the
 text section of the binary for a microcontroller with 384 kilobytes of RAM.
 The upper part of the table shows the effect on a system with non-frozen
 Limbo modules; the lower part shows the effect with frozen Limbo modules.
-
+.
 .TS
 center tab(:);
 c   s      cf(I) s cf(I) s
@@ -231,9 +231,10 @@ only when these other approaches are not used.
 Where freezing modules provides a distinct benefit is in the run-time use of
 RAM by modules. The
 .B "hw"
-rows show the corresponding values in bytes from the
+rows show the corresponding values in bytes from the summary provided by
+reading the
 .CW "/dev/memory"
-output, indicating the allocation high water mark after running the
+file, indicating the allocation high water mark after running the
 .CW "ls"
 utility. Note that this is only affected by the use of frozen modules, with
 the other approaches having no effect on the run-time RAM usage. This is
@@ -295,8 +296,8 @@ Conclusion and future work
 .LP
 Porting Inferno to microcontrollers based on ARM Cortex-M cores continues to
 be an interesting activity, with plenty of scope for improvements and
-optimisations. It is hoped that future work will help to further reduce
-Inferno's memory footprint, making it possible to run it on a wider range
+optimisations. It is hoped that future work will help to reduce Inferno's
+memory footprint even further, making it possible to run it on a wider range
 of microcontrollers.
 
 The source code associated with this work can be found in the following repository:
