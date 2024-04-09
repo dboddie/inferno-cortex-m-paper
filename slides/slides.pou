@@ -1,0 +1,101 @@
+\font TR Times-Roman
+\font TB Times-Bold
+\font TI Times-Italic
+\font TBI Times-BoldItalic
+
+\font H Helvetica
+\font HB Helvetica-Bold
+\font HO Helvetica-Oblique
+\font HBO Helvetica-BoldOblique
+
+\font C Courier
+\font CB Courier-Bold
+\font CO Courier-Oblique
+\font CBO Courier-BoldOblique
+
+\font S Symbol
+\font ZD ZapfDingbats
+
+\page 210 148 TR TB TI TBI H HB HO HBO C CB CO CBO S ZD
+
+90 290 Td
+/HB 24 Tf
+(Three More Cortex-M Inferno Ports) Tj
+
+150 250 Td
+/TR 20 Tf
+(David Boddie ) Tj
+/TR 16 Tf
+(<david@boddie.org.uk>) Tj
+
+175 227 Td
+/TI 16 Tf
+(https://www.boddie.org.uk/david) Tj
+
+
+150 150 Td
+/TR 18 Tf
+(10) Tj
+10 Ts /TR 10 Tf (th) Tj
+0 Ts /TR 18 Tf
+( International Workshop on Plan 9) Tj
+
+\page 210 148 TR TB TI TBI H HB HO HBO C CB CO CBO S ZD
+
+240 350 Td
+/HB 20 Tf
+(Previously) Tj
+
+100 300 Td
+20 TL
+/ZD 16 Tf ([ ) Tj /TR 16 Tf (Worked on freezing Limbo modules) Tj T*
+/ZD 16 Tf ([ ) Tj /TR 16 Tf (Provided a way of reducing run-time RAM usage) Tj
+/ZD 16 Tf ([ ) Tj /TR 16 Tf (Side effect of reducing start-up RAM usage)
+
+\(Updating the toolchain to support compilation of string constants in
+the text section of the binary file)
+
+\(Kernel data is typically copied into RAM a start-up, even if it is read-only.)
+\(There was already code to enable compilation of string constants into the text section of binaries.)
+\(It didn't seem to work, so I tweaked it slightly to make it work.)
+\(This has a large effect on the amount of available RAM, complementing the frozen module work.)
+\(There is some potential to save more RAM by finding constant structures and
+compiling them into the text section.)
+\(Not easy to see how to do that with the toolchain. A quick hack based on symbol names showed that
+a few more kilobytes could be saved with this approach.)
+
+\(Task switching uses the same setlabel-gotolabel functions but the interrupt
+handling is different to full 32-bit ARMs.)
+
+\(The 32-bit ARM approach switches between processor modes when handling exceptions.)
+\(This apparently isn't possible with Cortex-M4 cores. Exceptions run in Handler
+mode. Normal code runs in Thread mode. The only way to change to Thread mode is to
+return from an exception.)
+\(The trick is to return from the exception into a routine in Thread mode which then
+runs the usual preemption code.)
+\(This seems to work, but could be more heavily tested.)
+\(Described in more detail at
+https://github.com/dboddie/inferno-ports-doc/blob/main/cortex-m/preemption.md)
+
+\(Modifying the toolchain to support Cortex-M4 FP)
+
+\(ARM VFP instructions copied from 5l to tl and converted to Thumb-2 representation.)
+\(This could have been done more cleanly to keep code closer to 5l.)
+\(Handling of double-to-long conversions seems to need different endianness for Thumb-2.)
+\(There seemed to be a missing definition for the temporary FP register.)
+\(Added some simple Limbo test code for floating point operations. This reveals fundamentally broken FP support.)
+\(Disabled registerisation in libmath to avoid hitting a compiler issue.)
+
+\(New ports)
+
+\(All to SparkFun MicroMod boards but could be easily adapted to similar boards.)
+\(SAMD51J20 has 256KB RAM and more serial interfaces.)
+\(Artemis with Apollo3 core has 384KB RAM and Bluetooth capabilities that I haven't figured out yet.)
+\(Teensy has an i.MX RT1062 CPU \(a Cortex-M7\ core) with double precision FP support and 1024KB RAM.)
+\(Some issues remain with these - the README file for each one contains details.)
+\(See the ARM Cortex-M ports page for links to the ports.)
+\(https://github.com/dboddie/inferno-ports-doc/blob/main/cortex-m/index.md)
+
+\(Documenting the ports)
+
+\(https://github.com/dboddie/inferno-ports-doc/blob/main/cortex-m/index.md)
