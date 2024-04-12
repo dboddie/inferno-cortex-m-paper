@@ -1,0 +1,280 @@
+<html>
+<head>
+<title>Three More Cortex-M Inferno Ports</title>
+<link rel="stylesheet" type="text/css" href="slides.css" />
+</head>
+
+<body>
+<div class="slide">
+    <div class="title-block">
+    <h1>Three More Cortex-M Inferno Ports</h1>
+
+    <div class="author">David Boddie &lt;<a href="mailto:david@boddie.org.uk">david@boddie.org.uk</a>&gt;</div>
+    <div class="author"><a href="https://www.boddie.org.uk/david">https://www.boddie.org.uk/david</a></div>
+    </div>
+    <div class="footer">10<sup>th</sup> International Workshop on Plan 9</div>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>A Cortex-M4 port</h2>
+
+<p class="spacer4">
+Before IWP9 last year...
+</p>
+
+<ul>
+<li>Finally <a href="https://dboddie.gitlab.io/inferno-diary/2023-02-23.html">ran
+Inferno on a microcontroller</a> fairly reliably</li>
+<li>STM32F405 microcontroller
+<ul><li>Cortex-M4 core, 192KB RAM, 1MB flash memory</li>
+<li>Thumb-2 instruction set</li></ul></li>
+<li>Just enough RAM for a <tt>tiny/sh</tt> and tiny programs</li>
+<li>Experiments with SPI to drive screens, flash memory</li>
+</ul>
+
+<p>
+Like the ARM ports but different...
+</p>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>Task switching</h2>
+
+<p class="spacer4">
+Task switching uses <tt>setlabel</tt> and <tt>gotolabel</tt> functions like 
+full 32-bit ARMs but...
+</p>
+
+<ul>
+<li>32-bit ARM approach switches processor modes in exceptions</li>
+<li>Apparently not possible with Cortex-M4 cores
+<ul><li>Exceptions run in Handler mode</li>
+	<li>Normal code runs in Thread mode</li>
+	<li>Only way back to Thread mode is to return from an exception</li></ul></li>
+<li>Return into Thread mode <em>then</em> run preemption code</li>
+<li>Seems to work, but could be more heavily tested</li>
+<li>Described in more detail
+<a href="https://github.com/dboddie/inferno-ports-doc/blob/main/cortex-m/preemption.md">here</a></li>
+</ul>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>Frozen modules</h2>
+
+<ul class="spacer12">
+<li>Worked on <a href="https://github.com/dboddie/inferno-freeze-slides/blob/main/pdf/slides.pdf">freezing Limbo modules</a>
+<ul><li><em>(keeping Dis code in read-only memory)</em></li></ul></li>
+<li>Provided a way of reducing run-time RAM usage</li>
+<li>Side effect of reducing start-up RAM usage</li>
+</ul>
+
+<p>
+<em>Other ways to reduce RAM usage?</em>
+</p>
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>Saving memory &ndash; strings</h2>
+
+<p class="spacer4">
+Data is copied into RAM at start-up, even constant data.
+</p>
+
+<ul>
+<li>Compile string constants to the text section of the binary
+<ul><li>Already code to do this</li>
+<li>Enable with <tt>-t</tt></li>
+<li>It didn't seem to work, so I tweaked it slightly</li></ul></li>
+<li>A large effect on increasing available RAM
+<ul><li>Doubles the amount of available RAM in one case<br/>
+<em>(see the paper)</em></li></ul></li>
+<li>Complements the frozen module work</li>
+</ul>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>Saving memory &ndash; structures</h2>
+
+<p class="spacer8">
+Save more RAM by moving constant structures into the text section.
+</p>
+
+<ul>
+<li>Not easy (for me) to see how to do that</li>
+<li>A quick hack based on symbol names
+<ul><li>Saved a few more kilobytes</li></ul></li>
+<li>Perhaps not worth it &mdash; more study needed</li>
+</ul>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>Updating the toolchain (FP)</h2>
+
+<p class="spacer6">
+Cortex-M4 cores have some floating point instructions.<br/>
+Usually only single precision. Inferno uses double precision...
+</p>
+
+<ul>
+<li>ARM FP instruction generation copied from <tt>5l</tt> to <tt>tl</tt>
+<ul><li>Converted to Thumb-2 representation</li>
+<li>Could be brought closer to <tt>5l</tt></li></ul></li>
+<li>Double-to-long needs different endianness for Thumb-2</li>
+<li>Missing definition for the temporary FP register?</li>
+<li>Disabled registerisation in <tt>libmath</tt> to avoid a compiler issue</li>
+</ul>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>Updating the toolchain (FP)</h2>
+
+<div style="float: left; margin-right: 1em" class="spacer8">
+<pre class="tiny">
+; textmandel
+................................................................................
+................................................................................
+................................................................................
+..............................111111111111111111111.............................
+.......................11111111111111111111111111111111111......................
+...................1111111111111111111111122222344332222111111..................
+................111111111111111111111122222223346b544322222211111...............
+.............1111111111111111111111222222223333467dca643222222111111............
+...........11111111111111111111122222222233334567f f965433222222111111..........
+.........1111111111111111111112222222223334446a      fb54333322221111111........
+.......111111111111111111112222222223344445556c       86544433332211111111......
+......1111111111111111111222222233335 9c877 cabe     da98 65556b43221111111.....
+.....111111111111111112222233333334459c                   d9c e d43211111111....
+....1111111111111112223333333334444668b                        e5433211111111...
+...11111111111122234444433334444557                           d854332211111111..
+..111111122222233346c65556e65555669                            f  5322211111111.
+..1112222222233334568b daaf bb8778f                             d64322211111111.
+.11222222223333345568b          bc                               d43222211111111
+.222222223333446f779                                             533222211111111
+.2333334444455679                                               5433222211111111
+                                                             c865433222211111111
+.2333334444455679                                               5433222211111111
+.222222223333446f779                                             533222211111111
+.11222222223333345568b          bc                               d43222211111111
+..1112222222233334568b daaf bb8778f                             d64322211111111.
+..111111122222233346c65556e65555669                            f  5322211111111.
+...11111111111122234444433334444557                           d854332211111111..
+....1111111111111112223333333334444668b                        e5433211111111...
+.....111111111111111112222233333334459c                   d9c e d43211111111....
+......1111111111111111111222222233335 9c877 cabe     da98 65556b43221111111.....
+.......111111111111111111112222222223344445556c       86544433332211111111......
+.........1111111111111111111112222222223334446a      fb54333322221111111........
+...........11111111111111111111122222222233334567f f965433222222111111..........
+.............1111111111111111111111222222223333467dca643222222111111............
+................111111111111111111111122222223346b544322222211111...............
+...................1111111111111111111111122222344332222111111..................
+.......................11111111111111111111111111111111111......................
+..............................111111111111111111111.............................
+................................................................................
+................................................................................
+</pre>
+</div>
+
+<ul class="spacer12">
+<li>Updated emulation code for unimplemented FP instructions</li>
+<li>Added simple Limbo test code for FP operations</li>
+</ul>
+
+<p>
+Some <a href="https://github.com/dboddie/inferno-ports-doc/blob/main/cortex-m/floating-point.md">notes
+about the implementation</a> and
+<a href="https://dboddie.gitlab.io/inferno-diary/2023-09-25.html">commentary</a>.
+</p>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>New ports</h2>
+
+<p class="spacer4">
+All SparkFun MicroMod boards but could be easily adapted to similar boards:
+</p>
+
+<ul>
+<li>SAMD51J20 has 256KB RAM</li>
+<li>Artemis with Apollo3 core has 384KB RAM
+<ul><li><em>(and Bluetooth, but not figured this out yet)</em></li></ul></li>
+<li>Teensy is an i.MX RT1062 CPU (Cortex-M7) with 1024KB RAM
+<ul><li><em>(and double precision FP support!)</em></li></ul></li>
+<li>Some issues remain with these - the README file for each one contains details.</li>
+<li>See the <a href="https://github.com/dboddie/inferno-ports-doc/blob/main/cortex-m/index.md">ARM
+Cortex-M ports documentation</a> for links</li>
+</ul>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>Common code</h2>
+
+<p class="spacer4">
+Lots of duplicated code between the four ports.
+</p>
+
+<ul>
+<li>A new branch: <tt>cortexm</tt></li>
+<li>Common code in an <tt>os/cortexm</tt> directory</li>
+<li>Like the historical <tt>os/sa1110</tt> directory</li>
+<li>SAMD51 port still separate &mdash; board no longer works</li>
+</ul>
+
+<p>
+See the <a href="https://github.com/dboddie/inferno-os/tree/cortexm">cortexm branch</a>.
+</p>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>What's next?</h2>
+
+<ul class="spacer4">
+<li>Measure sizes of read-only and writable data structures</li>
+<li>Look at ways to keep read-only data in flash memory</li>
+<li>Make task switching robust</li>
+<li>Document how things were implemented</li>
+<li>More ports?</li>
+</ul>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>Resources</h2>
+
+<ul class="spacer10">
+<li>The related <a href="https://github.com/dboddie/inferno-cortex-m-paper">paper</a> to these slides</li>
+<li><a href="https://dboddie.github.io/inferno-ports">Inferno Ports</a> and
+<a href="https://github.com/dboddie/inferno-ports-doc">documentation</a></li>
+<li><a href="https://dboddie.gitlab.io/inferno-diary">An Inferno Diary</a></li>
+<li><a href="https://github.com/dboddie/inferno-freeze-slides/blob/main/pdf/slides.pdf">Hell Freezes Over</a> (from last year)</li>
+</ul>
+</div>

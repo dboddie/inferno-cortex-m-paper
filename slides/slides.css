@@ -1,0 +1,134 @@
+body {
+    background-color: #203070;
+    color: white;
+    font-size: 24pt;
+    font-family: Lato Light;
+}
+
+h1 {
+    margin-bottom: 5pt;
+    font-family: Lato Semibold;
+    font-weight: normal;
+    font-size: 40pt;
+    text-align: center
+}
+
+h2 {
+    font-size: 28pt;
+    font-family: Lato Semibold;
+    font-weight: normal;
+    text-align: center;
+    margin-bottom: 2%;
+    padding: 2px;
+    background-color: #204080;
+}
+
+.spacer4 {
+    padding-top: 4%
+}
+
+.spacer6 {
+    padding-top: 6%
+}
+
+.spacer8 {
+    padding-top: 8%
+}
+
+.spacer10 {
+    padding-top: 10%
+}
+
+.spacer12 {
+    padding-top: 12%
+}
+
+.spacer16 {
+    padding-top: 16%
+}
+
+.subtitle {
+    margin-top: 0;
+    font-family: Lato Medium;
+    font-weight: normal;
+    font-size: 24pt;
+    text-align: center
+}
+
+.author {
+    margin-top: 10pt;
+    text-align: center
+}
+
+.slide {
+    padding: 20pt 44pt 20pt 44pt;
+    break-after: page;
+}
+
+.footer
+{
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    bottom: 1em;
+    left: 50%;
+    transform: translate(-50%, 0)
+}
+
+tt {
+    padding: 2pt;
+    font-family: Noto Mono;
+    font-size: 0.9em
+}
+
+a {
+    color: #a0c0f0;
+    text-decoration-thickness: 1pt
+}
+
+hr {
+    border: 1px solid white
+}
+
+pre {
+    font-size: 0.8em;
+    background-color: black;
+    margin: 0 20pt 0 20pt;
+    padding: 5pt 10pt 5pt 10pt;
+    border: 1pt solid #c0c0c0
+}
+
+.tiny {
+    font-size: 0.2em;
+}
+
+li {
+    margin-bottom: 4pt
+}
+ul {
+    margin-top: 4pt
+}
+
+p {
+    color: #ffefaf
+}
+
+@media print {
+    @page {
+        size: a4 landscape;
+        margin: 0pt
+    }
+
+    .title-block {
+        position: absolute;
+        width: 100%;
+        top: 45%; left: 50%; transform: translate(-50%, -50%)
+    }
+}
+
+@media screen {
+    .slide {
+        border-top: 1px solid #e0e0e0;
+        height: 100%
+    }
+}
