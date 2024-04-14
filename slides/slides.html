@@ -97,8 +97,32 @@ Data is copied into RAM at start-up, even constant data.
 <li>It didn't seem to work, so I tweaked it slightly</li></ul></li>
 <li>A large effect on increasing available RAM
 <ul><li>Doubles the amount of available RAM in one case<br/>
-<em>(see the paper)</em></li></ul></li>
+<em>(other approaches have overlapping effects &mdash; see the paper)</em></li></ul></li>
 <li>Complements the frozen module work</li>
+</ul>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>Saving memory &ndash; memory pools</h2>
+
+<p class="spacer4">
+Using the Artemis/Apollo 3 port with just one memory pool:
+</p>
+
+<pre class="small">
+    cursize     maxsize       hw         nalloc       nfree      nbrk       max      name
+      57408      339968       57856         792         182          48      282548 main
+          0    16777216           0           0           0           0    16777204 heap
+          0           0           0           0           0           0           0 image
+</pre>
+
+<ul class="spacer4">
+<li>Prevents cases where either <tt>main</tt> or <tt>heap</tt> fills up</li>
+<li>Not sure how safe this is</li>
+<li>Allows some things to run on smaller systems</li>
 </ul>
 
 </div>
@@ -147,9 +171,14 @@ Usually only single precision. Inferno uses double precision...
 <div class="slide">
 <h2>Updating the toolchain (FP)</h2>
 
-<div style="float: left; margin-right: 1em" class="spacer8">
+<div style="float: left; margin-right: 1em" class="spacer4">
 <pre class="tiny">
-; textmandel
+Initial Dis: "/osinit.dis"
+**
+** Inferno
+** Vita Nuova
+**
+apollo3$ textmandel
 ................................................................................
 ................................................................................
 ................................................................................
@@ -190,6 +219,7 @@ Usually only single precision. Inferno uses double precision...
 ..............................111111111111111111111.............................
 ................................................................................
 ................................................................................
+apollo3$
 </pre>
 </div>
 
@@ -231,9 +261,47 @@ Cortex-M ports documentation</a> for links</li>
 <!-- ---------------------------------------------------------------- -->
 
 <div class="slide">
-<h2>Common code</h2>
+<h2>More peripherals</h2>
 
 <p class="spacer4">
+Different levels of support for peripherals:
+</p>
+
+<div class="spacer4"></div>
+<table class="rules">
+<tr><th>Port</th><th>Peripherals</th></tr>
+<tr><td><a href="https://github.com/dboddie/inferno-os/blob/stm32f405/os/stm32f405/README.md">STM32F405</a></td><td>UART, LED, I2C, SPI (external flash, e-paper)</td></tr>
+<tr><td><a href="https://github.com/dboddie/inferno-os/blob/samd51/os/samd51/README.md">SAMD51J20</a></td><td>UART, LED</td></tr>
+<tr><td><a href="https://github.com/dboddie/inferno-os/blob/apollo3/os/apollo3/README.md">Apollo3</a></td><td>UART, LED, I2C, SPI (LCD, e-paper)</td></tr>
+<tr><td><a href="https://github.com/dboddie/inferno-os/blob/teensy41mm/os/teensy41mm/README.md">Teensy</a></td><td>UART, LED</td></tr>
+</table>
+
+<p class="spacer4">
+Implementations can be quite similar.
+</p>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>More peripherals</h2>
+
+<table class="spacer8" style="width: 100%; text-align: center">
+<tr><td><img style="border: 1px solid #6080c0" width="480" height="360" src="images/2023-03-04-inky2.jpg"/></td>
+<td><img style="border: 1px solid #6080c0" src="images/2023-12-12-display.jpg"></td></tr>
+<tr><td><a href="https://dboddie.gitlab.io/inferno-diary/2023-09-02.html">e-paper</a></span></td>
+<td><a href="https://dboddie.gitlab.io/inferno-diary/2023-12-12.html">LCD</td></tr>
+</table>
+
+</div>
+
+<!-- ---------------------------------------------------------------- -->
+
+<div class="slide">
+<h2>Common code</h2>
+
+<p class="spacer8">
 Lots of duplicated code between the four ports.
 </p>
 
@@ -255,7 +323,7 @@ See the <a href="https://github.com/dboddie/inferno-os/tree/cortexm">cortexm bra
 <div class="slide">
 <h2>What's next?</h2>
 
-<ul class="spacer4">
+<ul class="spacer8">
 <li>Measure sizes of read-only and writable data structures</li>
 <li>Look at ways to keep read-only data in flash memory</li>
 <li>Make task switching robust</li>
