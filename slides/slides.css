@@ -98,6 +98,10 @@ pre {
     border: 1pt solid #c0c0c0
 }
 
+.small {
+    font-size: 0.5em;
+}
+
 .tiny {
     font-size: 0.2em;
 }
@@ -111,6 +115,24 @@ ul {
 
 p {
     color: #ffefaf
+}
+
+table.rules {
+    background-color: #60c0f0;
+}
+
+.rules tr {
+    background-color: #104080
+}
+
+td {
+    font-size: 24pt;
+    padding-left: 0.25em;
+    padding-right: 0.25em;
+}
+
+th {
+    font-size: 24pt
 }
 
 @media print {
